@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#1* passo a  se  fazer depois de instalar o debian
+caso o gnome tenha sido instalado sem querer desinstale
+Comece por programar o sistema para iniciar na CLI:
+
+systemctl set-default multi-user.target
+
+reboot
+
+tasksel remove gnome-desktop
+
+#testar  a internet com o comando ping: 
+ping www.google.com
+#instalar o comando vim para editar os textos
+apt-get install vim
+# configurar a interface de  rede com o IP estatico para o servidor em:
+vim /etc/network/interfaces
+a) comentar as  configuraçoes do DHCP(se  tiver)
+b) seguir o modelo da configuracao do arquivo interfaces:
+#arquivo para deixar o IP estatico no debian
+allow-hotplug enp1s0
+    iface enp1s0 inet static 
+    address 192.168.122.110
+    network 192.168.122.0
+    netmask 255.255.255.0
+    broadcast 192.168.122.255
+    gateway 192.168.122.1
+    dns-nameservers 192.168.122.110 8.8.8.8
+
+2* reinicie a maquina
+
+3*  Mudar o hostname da maquina em /etc/hostname
+4* editar o arquivo hosts em /etc/hosts
+127.0.0.1 localhost
+#linha de codigo para colocar o nome  completo da maquina com dominio
+127.0.1.1 server-dc.empresa.int server-dc 
+#linha de codigo para colocar o nome  completo da maquina com dominio e o IP da maquina p-ara ser reconhecido como DNS
+192.168.122.110 server-dc.empresa.int server-dc 
+5* configurar o resolv.conf em /etc/resolv.conf com os  IPs do dns do servidor e o segundo dns #Arquivo usado para resolver os enderecos IPs do servidor DNS da propria maquina
+nameserver 192.168.122.110 #DNS da maquina
+nameserver 8.8.8.8 #DNS alternativo do google
+6* reiniciar a maquina
+7* buscar por atualizaçoes no sistema operacional com o comando apt-get update -y && apt-get upgrade -y
+7,5* testar o hostname da maquina com hostname  e hostname -f #FQDN da maquina (nome + dominio)
+8* fazer ainstalaçao do samba 
+apt-get install -y samba krb5-config winbind smbclient
+realm kerberos dar um ok se  detectou
+servidor kerberos para o realm = host da maquina
+servidor administrativo para o realm = host da maquina
+9* criar um backup do smb.conf:
+mv /etc/samba/smb.conf 
+10* configurar o dominio com o comando: samba-tool domain provision
+REALM:
+DOMAIN
+SERVER ROLE
+DNS BACKEND
+DNS FOWARD: 
+Administrator password: senha forte
+repetir a senh
+
+11* copiar o arquivo  krb5.conf
+cp var/lib/samba/private/krb5.conf /etc/
+
+12* parar os servicos do samba:
+systemcil stop smbd nmbd winbind
+13* desabilitar da inicualizacao
+systemcil disable smbd nmbd winbind
+14* renomear os servicos de samba-ad-dc
+systemctl unmask samba-ad-dc
+15* subir o novo servico
+systemcil start samba-ad-dc
+16* habilitar o novo servico na inicializacao do sistema
+systemcil enable samba-ad-dc
+
+no pc windows:
+1* configure o DNS da rede sendo o servidor  debian e o DNS  alternativo do google
+central de  rede e compartilhamento e configuracao do adaptador
+
+É possível ingressar/inserir uma máquina no domínio através do PowerShell e alterar o nome dela com apenas um comando.
+
+Segue abaixo o comando:
+
+Add-Computer –DomainName dominio.local -NewName novo-nome –Restart 
+-DomainName Ingressa o computador no domínio
+-NewName  Altera o nome do computador
+-Restart Reinicia o computador
+
+
+
+
+
